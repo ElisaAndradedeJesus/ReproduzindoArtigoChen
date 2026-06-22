@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <errno.h>
 #include <signal.h>
 #include <unistd.h>
 #include <net/if.h>
 #include <arpa/inet.h>
 #include <bpf/libbpf.h>
 #include "common.h"
+#include <string.h>
 #include "flow_monitor.skel.h" 
 
 static volatile bool exiting = false;
@@ -54,7 +57,7 @@ static int handle_event(void *ctx, void *data, size_t data_sz) {
 int main(int argc, char **argv) {
     struct flow_monitor_bpf *skel;
     struct ring_buffer *rb = NULL;
-    int err;
+    int err = 0;
 
     if (argc < 2) {
         fprintf(stderr, "Uso: %s <interface_de_rede>\n", argv[0]);
@@ -77,12 +80,14 @@ int main(int argc, char **argv) {
 
     skel->links.network_flow_monitor = bpf_program__attach_xdp(skel->progs.network_flow_monitor, ifindex);
     if (!skel->links.network_flow_monitor) {
+        err = -errno;
         fprintf(stderr, "Falha ao anexar programa BPF na interface\n");
         goto cleanup;
     }
 
     rb = ring_buffer__new(bpf_map__fd(skel->maps.rb), handle_event, NULL, NULL);
     if (!rb) {
+        err = -errno;
         fprintf(stderr, "Falha ao criar o ring buffer\n");
         goto cleanup;
     }

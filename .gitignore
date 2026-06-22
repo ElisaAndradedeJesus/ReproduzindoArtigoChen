@@ -1,0 +1,20 @@
+# Artefatos de compilação eBPF/C
+*.o
+*.skel.h
+
+# Executável gerado pelo protótipo atual
+/t3/flow_monitor
+
+# Ambientes e caches Python (etapa futura de aprendizado de máquina)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Arquivos temporários de editores e do sistema
+*~
+.DS_Store
+
+# Estado gerado pelo Containerlab
+**/clab-*/
+
