@@ -37,6 +37,10 @@ topology:
 
   links:
     - endpoints: ["normal:eth1", "switch:eth1"]
-    - endpoints: ["attacker:eth1", "switch:eth2"]
-    - endpoints: ["victim:eth1", "switch:eth3"]
+      mtu: 1500
 
+    - endpoints: ["attacker:eth1", "switch:eth2"]
+      mtu: 1500
+
+    - endpoints: ["victim:eth1", "switch:eth3"]
+      mtu: 1500

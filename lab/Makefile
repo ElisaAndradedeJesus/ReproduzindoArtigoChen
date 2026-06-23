@@ -1,11 +1,16 @@
 IMAGE := chen-t3-lab:latest
 TOPOLOGY := chen-ddos.clab.yml
 LAB := chen-ddos
+T3_DIR := ../t3
 
 .PHONY: build deploy inspect monitor test-normal test-udp shell-victim destroy help
 
 build:
-	@echo "Construindo a imagem da vítima com o t3..."
+	@echo "Compilando o t3 na máquina host..."
+	$(MAKE) -C $(T3_DIR)
+	@test -x $(T3_DIR)/flow_monitor
+
+	@echo "Construindo a imagem da vítima..."
 	sudo docker build -f Dockerfile -t $(IMAGE) ..
 
 deploy: build

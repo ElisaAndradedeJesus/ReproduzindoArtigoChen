@@ -7,6 +7,27 @@ O protótipo ativo está em `t3/`. Atualmente, ele identifica fluxos IPv4
 TCP/UDP por cinco tuplas, mantém métricas em um mapa BPF e envia eventos do
 kernel para o espaço de usuário por um ring buffer.
 
+## Como o protótipo funciona
+
+```text
+Pacote chega à interface da vítima
+              ↓
+Programa XDP identifica o fluxo e atualiza o flow_map
+              ↓
+Ring buffer envia uma fotografia das métricas ao userspace
+              ↓
+main.c calcula taxas e imprime o fluxo no terminal
+```
+
+O `flow_map` usa como chave a combinação de IPs, portas e protocolo. Para cada
+fluxo, ele mantém timestamps, total de pacotes e bytes, menor tamanho de pacote
+e contagens das flags TCP ACK, SYN, RST, URG e CWR.
+
+O protótipo já foi validado em uma topologia Containerlab: um cliente gerou
+tráfego TCP com `iperf3`, o XDP anexado à vítima atualizou o mapa e o programa
+userspace exibiu as métricas. Ele ainda opera somente como monitor; detecção e
+mitigação serão adicionadas nas próximas etapas.
+
 ## Estrutura
 
 ```text
@@ -118,6 +139,20 @@ make monitor
 ```
 
 As instruções completas estão em [`lab/README.md`](lab/README.md).
+
+### Estado demonstrável
+
+Atualmente é possível demonstrar:
+
+1. criação reproduzível da topologia;
+2. carregamento do XDP na interface `eth1` da vítima;
+3. geração de um fluxo TCP entre containers;
+4. coleta das métricas no kernel;
+5. envio pelo ring buffer e exibição no terminal;
+6. desanexação do XDP ao encerrar com `Ctrl+C`.
+
+Esse resultado valida o módulo inicial de coleta do artigo. Ainda não representa
+o sistema completo de detecção e mitigação de DDoS.
 
 ## Estado atual e limitações
 
